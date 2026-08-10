@@ -1,0 +1,26 @@
+stages:
+  - code-review
+
+# ────────────────────────────────────────────────────────────────────────────
+# [MR 코드 리뷰] GitLab Settings > CI/CD > Variables 에 아래 값 등록 필요
+#   - GATEWAY_URL    : AI Gateway 내부 URL  (e.g. http://aigateway:9001)
+#   - GATEWAY_API_KEY: AI Gateway X-API-Key (Masked)
+#
+# GitLab 접근 토큰은 CI_JOB_TOKEN (자동 주입)을 사용하므로 별도 발급 불필요
+# ────────────────────────────────────────────────────────────────────────────
+
+code-review:
+  stage: code-review
+  image: python:3.11-slim
+  rules:
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  variables:
+    GIT_STRATEGY: none
+    AI_SERVICE_NAME: "claude"
+    AI_MODEL_CODE: ""
+    MAX_DIFF_CHARS: "20000"
+  script:
+    - pip install requests --quiet
+    - python gitlab_code_review.py
+  allow_failure: true
